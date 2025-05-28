@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.effect.ColorAdjust?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="autofilesorter.AutoController">
+   <children>
+      <ImageView fitHeight="256.0" fitWidth="256.0" layoutX="330.0" layoutY="72.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@image.png" />
+         </image>
+      </ImageView>
+      <Label layoutX="39.0" layoutY="48.0" prefHeight="48.0" prefWidth="290.0" text="Auto File Sorter" textAlignment="RIGHT" textFill="#ff9e29">
+         <font>
+            <Font name="Bauhaus 93" size="42.0" />
+         </font>
+      </Label>
+      <TextField fx:id="path" focusTraversable="false" layoutX="39.0" layoutY="126.0" prefHeight="30.0" prefWidth="240.0" promptText="Folder Path">
+         <font>
+            <Font name="Bauhaus 93" size="12.0" />
+         </font>
+      </TextField>
+      <Label layoutX="39.0" layoutY="96.0" prefHeight="30.0" prefWidth="297.0" text="Include Folder to be sorted automatically" textAlignment="RIGHT">
+         <font>
+            <Font name="Bauhaus 93" size="16.0" />
+         </font>
+      </Label>
+      <ImageView fx:id="add" fitHeight="22.0" fitWidth="22.0" layoutX="285.0" layoutY="130.0" pickOnBounds="true" preserveRatio="true" styleClass="button">
+         <image>
+            <Image url="@add.png" />
+         </image>
+      </ImageView>
+      <ImageView fx:id="remove" fitHeight="22.0" fitWidth="22.0" layoutX="315.0" layoutY="130.0" pickOnBounds="true" preserveRatio="true" styleClass="button">
+         <image>
+            <Image url="@cross-circle.png" />
+         </image>
+      </ImageView>
+      <Button fx:id="back" layoutX="423.0" layoutY="336.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="95.0" style="-fx-background-color: ff9e29;" stylesheets="@table.css" text="Return" textFill="WHITE">
+         <font>
+            <Font name="Bauhaus 93" size="22.0" />
+         </font>
+      </Button>
+      <TableView fx:id="folders" focusTraversable="false" layoutX="39.0" layoutY="176.0" prefHeight="180.0" prefWidth="297.0" style="-fx-background-color: #ffecd6;" stylesheets="@table.css">
+         <columns>
+            <TableColumn fx:id="foldername" editable="false" prefWidth="295.99998982747394" text="Folders Included" />
+         </columns>
+         <effect>
+            <ColorAdjust contrast="0.13" />
+         </effect>
+         <opaqueInsets>
+            <Insets />
+         </opaqueInsets>
+         <styleClass>
+            <String fx:value="column-header" />
+            <String fx:value="table-view" />
+            <String fx:value="table-cell" />
+         </styleClass>
+      </TableView>
+   </children>
+</AnchorPane>
