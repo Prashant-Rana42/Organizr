@@ -1,4 +1,4 @@
-# Organizr
+ # Organizr
 
 Organizr is a Java and JavaFX desktop application that organizes files based on their type. With just a folder path, the app creates separate folders for file types like images, videos, documents, etc., and sorts everything automatically.
 
@@ -39,12 +39,7 @@ Organizr is a Java and JavaFX desktop application that organizes files based on 
 
 1. User inputs the path of the folder to be sorted.
 2. The application scans all files and detects their types.
-3. It creates subfolders such as:
-   - `/Images`
-   - `/Videos`
-   - `/Documents`
-   - `/Audio`
-   - `/Archives`
+3. It creates subfolders based on file type(except for png, jpg, mp4, and pdf, they are moved to default system folders).
 4. Each file is moved to its respective folder.
 5. In Auto Mode, the app runs silently in the background and keeps sorting new files in real-time.
 
