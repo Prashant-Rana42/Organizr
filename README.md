@@ -61,4 +61,4 @@ Organizr is a Java and JavaFX desktop application that organizes files based on 
 
 ## 📋 Note
 
-1. Auto sorter mode runs in background even if you close the window you can close it from Task manager it will appear as "OpenJDK Platform binary" in Task manager click on it and the. click on "End task" to stop auto Sorter or it wil also terminate on shutdown.
+1. Auto sorter mode runs in background even if you close the window. You can close it from Task manager, it will appear as "OpenJDK Platform binary" in Task manage, click on it and then click on "End task" to stop auto Sorter or it wil also terminate on shutdown.
