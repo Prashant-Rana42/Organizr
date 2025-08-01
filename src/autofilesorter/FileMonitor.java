@@ -2,7 +2,6 @@ package autofilesorter;
 
 import java.io.IOException;
 import java.nio.file.*;
-import java.nio.file.WatchEvent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -15,13 +14,8 @@ public class FileMonitor {
     private final Map<WatchKey, Path> keyPathMap = new HashMap<>();
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    private final Map<String, String> extensionToFolder = Map.of(
-        "pdf", "Documents",
-        "jpg", "Pictures",
-        "png", "Pictures",
-        "mp4", "Videos"
-        //"zip", "Archives"
-    );
+    // Mappings will be set at runtime by AutoController
+    private final Map<String, String> extensionToFolder = new HashMap<>();
 
     private FileMonitor() throws IOException {
         watchService = FileSystems.getDefault().newWatchService();
@@ -37,6 +31,12 @@ public class FileMonitor {
             }
         }
         return instance;
+    }
+
+    /** Replace current mappings with new ones. */
+    public void setExtensionMappings(Map<String, String> map) {
+        extensionToFolder.clear();
+        extensionToFolder.putAll(map);
     }
 
     public void watchDirectory(Path dir) {
@@ -55,37 +55,27 @@ public class FileMonitor {
 
     private void startWatcherThread() {
         executor.submit(() -> {
-            while (!Thread.currentThread().isInterrupted()) {
-                WatchKey key;
-                try {
-                    key = watchService.take();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
-                }
-
-                Path dir = keyPathMap.get(key);
-                if (dir == null) {
-                    key.reset();
-                    continue;
-                }
-
-                for (WatchEvent<?> event : key.pollEvents()) {
-                    if (event.kind() == StandardWatchEventKinds.OVERFLOW) continue;
-
-                    @SuppressWarnings("unchecked")
-                    WatchEvent<Path> ev = (WatchEvent<Path>) event;
-
-                    Path filename = ev.context();
-                    Path fullPath = dir.resolve(filename);
-
-                    if (Files.isRegularFile(fullPath)) {
-                        System.out.println("New file detected: " + fullPath);
-                        sortFile(fullPath, dir);
+            try {
+                while (!Thread.currentThread().isInterrupted()) {
+                    WatchKey key = watchService.take();
+                    Path dir = keyPathMap.get(key);
+                    if (dir == null) {
+                        key.reset();
+                        continue;
                     }
+                    for (WatchEvent<?> event : key.pollEvents()) {
+                        if (event.kind() == StandardWatchEventKinds.OVERFLOW) continue;
+                        @SuppressWarnings("unchecked")
+                        WatchEvent<Path> ev = (WatchEvent<Path>) event;
+                        Path fullPath = dir.resolve(ev.context());
+                        if (Files.isRegularFile(fullPath)) {
+                            sortFile(fullPath, dir);
+                        }
+                    }
+                    key.reset();
                 }
-
-                key.reset();
+            } catch (InterruptedException | ClosedWatchServiceException ex) {
+                Thread.currentThread().interrupt();
             }
         });
     }
@@ -95,41 +85,30 @@ public class FileMonitor {
         String ext = getExtension(fileName);
         if (ext == null) return;
 
+        // Wait until file is fully written
         try {
-            // Wait until file is accessible (max 2s)
             for (int i = 0; i < 10; i++) {
                 if (Files.exists(filePath)) {
-                    try {
-                        Files.newInputStream(filePath).close();
-                        break;
-                    } catch (IOException e) {
-                        Thread.sleep(200);
-                    }
-                } else {
-                    Thread.sleep(200);
-                }
+                    try { Files.newInputStream(filePath).close(); break; }
+                    catch (IOException e) { Thread.sleep(200); }
+                } else { Thread.sleep(200); }
             }
         } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            return;
+            Thread.currentThread().interrupt(); return;
         }
 
         Path targetDir;
         if (extensionToFolder.containsKey(ext)) {
-            String userHome = System.getProperty("user.home");
-            targetDir = Paths.get(userHome, extensionToFolder.get(ext));
+            targetDir = Paths.get(extensionToFolder.get(ext));
         } else {
             targetDir = baseDir.resolve(ext);
         }
 
         try {
             if (!Files.exists(targetDir)) Files.createDirectories(targetDir);
-            Path targetPath = targetDir.resolve(fileName);
-            Files.move(filePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
-            Platform.runLater(() -> {
-                // update UI if needed
-            });
-            System.out.println("Moved: " + fileName);
+            Files.move(filePath, targetDir.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
+            Platform.runLater(() -> { /* update UI if needed */ });
+            System.out.println("Moved: " + fileName + " -> " + targetDir);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -137,15 +116,12 @@ public class FileMonitor {
 
     private String getExtension(String fileName) {
         int dot = fileName.lastIndexOf('.');
-        return (dot < 0 || dot == fileName.length() - 1) ? null : fileName.substring(dot + 1).toLowerCase();
+        return (dot < 0 || dot == fileName.length() - 1) ? null
+            : fileName.substring(dot + 1).toLowerCase();
     }
 
     public void shutdown() {
-        try {
-            watchService.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        try { watchService.close(); } catch (IOException e) { e.printStackTrace(); }
         executor.shutdownNow();
     }
 }

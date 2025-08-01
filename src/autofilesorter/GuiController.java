@@ -98,7 +98,7 @@ public class GuiController implements Initializable {
             stage.setScene(new Scene(root));
             stage.show();
         } catch (IOException e) {
-            showMessage("Failed to load settings.", true);
+            showMessage("Failed to load settings."+e.getMessage(), true);
         }
     }
 
